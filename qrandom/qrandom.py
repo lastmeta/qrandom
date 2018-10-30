@@ -46,7 +46,33 @@ def deduce_zero_or_one(random_number_generator):
     return 0 if bit_count / 2 > one_count else 1
 
 
-def inclusive_between(lower, higher):
-    # return a random number of an even distribution
-    # between and including these numbers
-    pass
+def inclusive_between(random_number_generator, lower, higher):
+    two_x_counter = abs(higher + 1 - lower)
+    target = abs(higher + 1 - lower) / 2
+    while two_x_counter > 1:
+        _, bit_count, one_count = generate_and_count(random_number_generator)
+        if bit_count / 2 > one_count:
+            two_x_counter = two_x_counter / 2
+            target -= two_x_counter
+        elif bit_count / 2 < one_count:
+            two_x_counter = two_x_counter / 2
+            target += two_x_counter
+        print(two_x_counter, target)
+    print(target + lower)
+    return target + lower
+
+
+def inclusive_between_for_small_numbers(random_number_generator, lower, higher):
+    def get_max_values(c):
+        maxv = max(c.values())
+        maxvs = {k: v for k, v in c.items() if v == maxv}
+        return maxvs
+    counters = {}
+    counters = { each: 0 for each in range(lower, higher + 1)}
+    max_values = get_max_values(counters)
+    while len(max_values) > 1:
+        for each in range(lower, higher + 1):
+            _, _, one_count = generate_and_count(random_number_generator)
+            counters[each] = counters[each] + one_count
+            max_values = get_max_values(counters)
+    return list(max_values.keys())[0]
