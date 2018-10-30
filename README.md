@@ -29,4 +29,9 @@
 634.6410161513776
 >>> ratio
 0.9716666666666667
+>>> qr.deduce_zero_or_one(qgen)
+0
+>>> qr.deduce_zero_or_one(qgen)
+1
+>>>
 ```

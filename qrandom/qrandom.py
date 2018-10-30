@@ -36,3 +36,11 @@ def run_for_seconds(random_number_generator, seconds, verbose=False):
 
 def get_two_sigma_scoring(bit_count, ones_count):
     return get_2_sigma_score(bit_count, ones_count)
+
+
+def deduce_zero_or_one(random_number_generator):
+    one_count = 0
+    bit_count = 0
+    while (bit_count / 2) == one_count or bit_count == 0:
+        _, bit_count, one_count = generate_and_count(random_number_generator)
+    return 0 if bit_count / 2 > one_count else 1
