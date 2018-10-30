@@ -44,3 +44,9 @@ def deduce_zero_or_one(random_number_generator):
     while (bit_count / 2) == one_count or bit_count == 0:
         _, bit_count, one_count = generate_and_count(random_number_generator)
     return 0 if bit_count / 2 > one_count else 1
+
+
+def inclusive_between(lower, higher):
+    # return a random number of an even distribution
+    # between and including these numbers
+    pass
