@@ -12,7 +12,7 @@ setup(
     author_email='jordan.kay@gmail.com',
     install_requires=['pyserial', 'bitstring'],
     description='wrapper for any quantum random number generator',
-    long_description=read('README.md'),
+    long_description='README.md',
     long_description_content_type='text/markdown',
     license='Do whatsoever thou wilt.',
     classifiers=[],
