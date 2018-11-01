@@ -41,12 +41,46 @@ def get_two_sigma_scoring(bit_count, ones_count):
 def deduce_zero_or_one(random_number_generator):
     one_count = 0
     bit_count = 0
-    while (bit_count / 2) == one_count or bit_count == 0:
+    while bit_count == 0 or (bit_count / 2) == one_count:
         _, bit_count, one_count = generate_and_count(random_number_generator)
     return 0 if bit_count / 2 > one_count else 1
 
 
-def inclusive_between(random_number_generator, lower, higher):
+def inclusive_between_still_wont_work(random_number_generator, lower, higher):
+    def add_offset(lower, higher):
+        diff = abs(higher + 1 - lower)
+        b = bin(diff)
+        if b[0:3] == '0b1' and '1' not in b[3:]:
+            return higher, lower, 0
+        offset = eval('0b10' + b[3:].replace('1','0')) - diff
+        return lower - offset, offset + higher, offset
+    def remove_offset(lower, higher, target):
+        pass
+    def return_condition(key, condition, value):
+        if condition == '>=':
+            return True if key >= value else False
+        else:
+            return True if key > value else False
+
+
+    difference = abs(higher + 1 - lower)  / 2
+    target = difference
+    condition = '>=' if deduce_zero_or_one(random_number_generator) == 1 else '>'
+    while return_condition(difference, condition, 1):
+        if deduce_zero_or_one(random_number_generator) == 1:
+            difference = difference / 2
+            target += difference if difference >= 1 else difference * 2
+        else:
+            difference = difference / 2
+            target -= difference if difference >= 1 else difference * 2
+        #print('d', difference, 't', target)
+    print('final', target)
+    if target < lower:
+        return inclusive_between(random_number_generator, lower, higher)
+    return target
+
+
+def inclusive_between_orig(random_number_generator, lower, higher):
     two_x_counter = abs(higher + 1 - lower)
     target = abs(higher + 1 - lower) / 2
     while two_x_counter > 1:
