@@ -49,20 +49,28 @@ def test_quick_sigma_detect_anywhere(future=None, maximums=None, minimums=None):
     print('min', min_sum)  # this is what matters, if this reaches a threshold, do the thing.
     return min_sum, max_sum
 
+
 import numpy as np
 def densest(array, size):
     density = np.convolve(array, np.ones([size]), mode='valid')
-    return np.argmax(density)
+    index = np.argmax(density)
+    partial_array = array[index:index + size]
+    return index, partial_array
+
+
+def get_normal_sigma(total_length, desired_sigma):
+    sigma = math.sqrt(total_length*(.5)*(.5)) * desired_sigma
+    return (total_length/2)-(sigma/2), (total_length/2)+(sigma/2)
 
 example = np.array([0,0,0,1,1,1,1,1,1,1,0,1,1,1,1,0,0,0,1,0,0,1,1,0,1,0,0,0,0,0,1,0])
 
+index, partial_example = densest(example, 10)
+# look for larger lengths too. zero in on highest by length, that means trim zeros at least. 
+high, low = get_normal_sigma(len(partial_example), 2)
+ones = np.sum(partial_example)
+if ones > high or ones < low:
+    print("trigger", "check other streams after to make sure triggers overlap" )
 print( densest(example, 10) )
-
-def get_normal_sigma(total_length, desired_sigma):
-    sigma = math.sqrt(total_length*(.5)*(.5))
-    return (total_length/2)-(sigma/2), (total_length/2)+(sigma/2)
-
-
 
 if __name__=="__main__":
     test_quick_sigma_detect_anywhere()
