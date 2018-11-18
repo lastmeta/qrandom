@@ -49,5 +49,20 @@ def test_quick_sigma_detect_anywhere(future=None, maximums=None, minimums=None):
     print('min', min_sum)  # this is what matters, if this reaches a threshold, do the thing.
     return min_sum, max_sum
 
+import numpy as np
+def densest(array, size):
+    density = np.convolve(array, np.ones([size]), mode='valid')
+    return np.argmax(density)
+
+example = np.array([0,0,0,1,1,1,1,1,1,1,0,1,1,1,1,0,0,0,1,0,0,1,1,0,1,0,0,0,0,0,1,0])
+
+print( densest(example, 10) )
+
+def get_normal_sigma(total_length, desired_sigma):
+    sigma = math.sqrt(total_length*(.5)*(.5))
+    return (total_length/2)-(sigma/2), (total_length/2)+(sigma/2)
+
+
+
 if __name__=="__main__":
     test_quick_sigma_detect_anywhere()
