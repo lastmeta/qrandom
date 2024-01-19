@@ -17,6 +17,7 @@ import numpy as np
 from bitstring import BitArray
 from serial.tools import list_ports
 
+
 class TrueRNG(object):
     """ TrueRNG object for reading random bits from the TrueRNG 3 USB device """
 
@@ -47,8 +48,8 @@ class TrueRNG(object):
     def set_return_type(self, return_type='string'):
         self.return_type = return_type
         if not (return_type.startswith('s')
-        or blocksize_type.startswith('b')
-        or blocksize_type.startswith('a')):
+                or return_type.startswith('b')
+                or return_type.startswith('a')):
             raise 'invalid return_type. options include: [string, bits, array]'
         return self.return_type
 
@@ -63,13 +64,15 @@ class TrueRNG(object):
             return None, None
 
         if rng_com_port == 'default':
-            ports=dict()
+            ports = dict()
             ports_avaiable = list(list_ports.comports())
             rng_com_port = None
             # Loop on all available ports to find TrueRNG
-            rng_com_port, self.port = _look_for_port(ports_avaiable, name="TrueRNG")
+            rng_com_port, self.port = _look_for_port(
+                ports_avaiable, name="TrueRNG")
             if rng_com_port == None:
-                rng_com_port, self.port = _look_for_port(ports_avaiable, name="USB Serial Device")
+                rng_com_port, self.port = _look_for_port(
+                    ports_avaiable, name="USB Serial Device")
         else:
             self.port = rng_com_port
 
@@ -105,7 +108,7 @@ class TrueRNG(object):
             print(f'Do you have permissions set to read {self.port}?')
 
         # Open the serial port if it isn't open
-        if(ser.isOpen() == False):
+        if (ser.isOpen() == False):
             ser.open()
 
         # Set Data Terminal Ready to start flow
@@ -139,7 +142,73 @@ class TrueRNG(object):
         # as string
         return bytes
 
-
     @staticmethod
     def convert_to_array(bitstring: str) -> np.ndarray:
         return np.fromstring(bitstring, 'u1') - ord('0')
+
+
+def withinRange1(bit_array, chunk_size=15, max_value=32831):
+    # Ensure the bit array length is a multiple of chunk_size
+    trim_size = len(bit_array) % chunk_size
+    if trim_size != 0:
+        bit_array = bit_array[:-trim_size]
+
+    # Reshape the array into chunks of chunk_size
+    reshaped_array = bit_array.reshape(-1, chunk_size)
+
+    # Convert each chunk into an integer
+    numbers = np.packbits(reshaped_array, axis=-1)
+
+    # Convert from binary to decimal
+    numbers = numbers.dot(2**np.arange(chunk_size)[::-1])
+
+    # Filter out numbers greater than max_value
+    valid_numbers = numbers[numbers <= max_value]
+
+    return valid_numbers
+
+
+def withinSpecialRange(bit_array, chunk_size=23):
+    '''
+    generating random numbers between and including 0 and 32832
+    32832 = 32768 + 64
+    111111111111111 = 32767
+    111111 = 63
+    1 = indicator to add 1 to 32767
+    1 = indicator to add 1 to 64
+    chunk size = 15 + 6 + 1 + 1 
+    '''
+    def chunk_array(arr, chunk_size):
+        # Trim the array if it's not divisible by chunk_size
+        trim_size = len(arr) % chunk_size
+        if trim_size != 0:
+            arr = arr[:-trim_size]
+        # Reshape the array into chunks of chunk_size
+        return arr.reshape(-1, chunk_size)
+
+    def binary_array_to_int(arr, num_bits, starting_at=0):
+        # Ensure starting_at is within the array bounds
+        starting_at = max(0, min(starting_at, len(arr) - 1))
+        # Ensure num_bits does not exceed the length of the array from the starting point
+        num_bits = min(num_bits, len(arr) - starting_at)
+        # Select the bits from starting_at to starting_at + num_bits
+        selected_bits = arr[starting_at:starting_at + num_bits]
+        # Convert the selected binary array to an integer
+        int_value = selected_bits.dot(2 ** np.arange(selected_bits.size)[::-1])
+        return int_value
+
+    array = chunk_array(bit_array, chunk_size)
+    return [
+        binary_array_to_int(array[i], 15) +
+        binary_array_to_int(array[i], 6, 15) +
+        array[i][21] +
+        array[i][22]
+        for i in range(len(array))]
+
+
+def generate_70_million_numbers():
+    t = TrueRNG(blocksize=1024*1024, return_type='array')
+    numbers = []
+    while len(numbers) < 70_000_000:
+        numbers = numbers + withinSpecialRange(t.generate())
+    return numbers[:70_000_000]
