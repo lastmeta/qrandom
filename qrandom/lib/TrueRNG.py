@@ -212,3 +212,14 @@ def generate_70_million_numbers():
     while len(numbers) < 70_000_000:
         numbers = numbers + withinSpecialRange(t.generate())
     return numbers[:70_000_000]
+# >>> from TrueRNG import TrueRNG, withinSpecialRange
+# >>> t = TrueRNG(blocksize=1024*1024, return_type='array')
+# >>> from TrueRNG import TrueRNG, withinSpecialRange
+# >>> t = TrueRNG(blocksize=1024, return_type='array')
+# >>> t.generate()
+# >>> numbers = []
+# >>> while len(numbers) < 30_000_000:
+# ...   numbers = numbers + withinSpecialRange(t.generate())
+# ...   if len(numbers) >= 30_000_000:
+# ...     with open('batch3.30m.txt', mode='w') as f:
+# ...       f.write(str(numbers))
